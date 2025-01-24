@@ -1,0 +1,10 @@
+[
+  {
+    "name": "CollectionOrder",
+    "policy": "OR('farmer-fins-com.member', 'insurance-fins-com.member','officer-fins-com.member','researchers-fins-com.member')",
+    "requiredPeerCount": 1,
+    "maxPeerCount": 1,
+    "blockToLive": 1000000,
+    "memberOnlyRead": true
+  }
+]

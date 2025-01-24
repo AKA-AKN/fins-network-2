@@ -1,0 +1,228 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+################################################################################
+#   Section: Organizations
+################################################################################
+Organizations:
+
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: ./organizations/ordererOrganizations/fins.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+        OrdererEndpoints:
+            - orderer.fins.com:7050
+
+    - &Farmer
+        Name: farmer-fins-com
+        ID: farmer-fins-com
+        MSPDir: ./organizations/peerOrganizations/farmer.fins.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('farmer-fins-com.admin', 'farmer-fins-com.peer', 'farmer-fins-com.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('farmer-fins-com.admin', 'farmer-fins-com.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('farmer-fins-com.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('farmer-fins-com.peer')"
+        AnchorPeers:
+            - Host: peer0.farmer.fins.com
+              Port: 7051
+
+    - &Insurance
+        Name: insurance-fins-com
+        ID: insurance-fins-com
+        MSPDir: ./organizations/peerOrganizations/insurance.fins.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('insurance-fins-com.admin', 'insurance-fins-com.peer', 'insurance-fins-com.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('insurance-fins-com.admin', 'insurance-fins-com.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('insurance-fins-com.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('insurance-fins-com.peer')"
+        AnchorPeers:
+            - Host: peer0.insurance.fins.com
+              Port: 8051
+
+    - &Officer
+        Name: officer-fins-com
+        ID: officer-fins-com
+        MSPDir: ./organizations/peerOrganizations/officer.fins.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('officer-fins-com.admin', 'officer-fins-com.peer', 'officer-fins-com.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('officer-fins-com.admin', 'officer-fins-com.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('officer-fins-com.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('officer-fins-com.peer')"
+        AnchorPeers:
+            - Host: peer0.officer.fins.com
+              Port: 9051
+
+    - &Researchers
+        Name: researchers-fins-com
+        ID: researchers-fins-com
+        MSPDir: ./organizations/peerOrganizations/researchers.fins.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('researchers-fins-com.admin', 'researchers-fins-com.peer', 'researchers-fins-com.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('researchers-fins-com.admin', 'researchers-fins-com.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('researchers-fins-com.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('researchers-fins-com.peer')"
+        AnchorPeers:
+            - Host: peer0.researchers.fins.com
+              Port: 10051
+
+################################################################################
+#   Section: Capabilities
+################################################################################
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+    Orderer: &OrdererCapabilities
+        V2_0: true
+    Application: &ApplicationCapabilities
+        V2_0: true
+
+################################################################################
+#   Section: Application
+################################################################################
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+################################################################################
+#   Section: Orderer
+################################################################################
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    Addresses:
+        - orderer.fins.com:7050
+    EtcdRaft:
+        Consenters:
+        - Host: orderer.fins.com
+          Port: 7050
+          ClientTLSCert: ./organizations/ordererOrganizations/fins.com/orderers/orderer.fins.com/tls/server.crt
+          ServerTLSCert: ./organizations/ordererOrganizations/fins.com/orderers/orderer.fins.com/tls/server.crt
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+################################################################################
+#   Section: Channel
+################################################################################
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+################################################################################
+#   Section: Profiles
+################################################################################
+Profiles:
+    FourOrgsOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            FINSConsortium:
+                Organizations:
+                    - *Farmer
+                    - *Insurance
+                    - *Officer
+                    - *Researchers
+    FourOrgsChannel:
+        Consortium: FINSConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Farmer
+                - *Insurance
+                - *Officer
+                - *Researchers
+            Capabilities:
+                <<: *ApplicationCapabilities
