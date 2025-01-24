@@ -12,7 +12,7 @@ FABRIC_CFG_PATH=${PWD}configtx
 createChannelTx() {
 
 	set -x
-	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
+	configtxgen -profile FourOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
 	res=$?
 	{ set +x; } 2>/dev/null
 	if [ $res -ne 0 ]; then
@@ -23,11 +23,11 @@ createChannelTx() {
 
 createAncorPeerTx() {
 
-	for orgmsp in ManufacturerMSP DealerMSP MvdMSP; do
+	for orgmsp in FarmerMSP InsuranceMSP OfficerMSP ResearchersMSP; do
 
 	echo "Generating anchor peer update transaction for ${orgmsp}"
 	set -x
-	configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
+	configtxgen -profile FourOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
 	res=$?
 	{ set +x; } 2>/dev/null
 	if [ $res -ne 0 ]; then
